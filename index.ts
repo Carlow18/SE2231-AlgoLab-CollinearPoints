@@ -176,19 +176,51 @@ let sketch = function (p) {
   }
 }
 
-  class FastCollinearPoints {
-    constructor(points: Point[]) {
-      // YOUR CODE HERE
-    }
+class FastCollinearPoints {
+  private segment: LineSegment[];
 
-    numberOfSegments(): number {
-      // YOUR CODE HERE
-    }
+  constructor(points: Point[]) {
+      if (!points || points.some(point => !point)) {
+          throw new Error("At least one point in array is null");
+      }
 
-    segments(): LineSegment[] {
-      // YOUR CODE HERE
-    }
+      this.segment = [];
+      const n = points.length;
+
+      for (let i = 0; i < n; i++) {
+          const origin = points[i];
+          const slopes = new Map<number, Point[]>();
+
+          for (let j = 0; j < n; j++) {
+              if (i !== j) {
+                  const slope = origin.slopeTo(points[j]);
+                  if (!slopes.has(slope)) {
+                      slopes.set(slope, []);
+                  }
+                  slopes.get(slope)!.push(points[j]);
+              }
+          }
+
+          slopes.forEach((collinearPoints, slope) => {
+              if (collinearPoints.length >= 3) {
+                  collinearPoints.push(origin);
+                  collinearPoints.sort((a, b) => a.compareTo(b));
+                  if (collinearPoints[0] === origin) {
+                      this.segment.push(new LineSegment(collinearPoints[0], collinearPoints[collinearPoints.length - 1]));
+                  }
+              }
+          });
+      }
   }
+
+  numberOfSegments(): number {
+      return this.segment.length;
+  }
+
+  segments(): LineSegment[] {
+      return this.segment.slice();
+  }
+}
 
   // Declare your point objects here~
   // const point = new Point(19000, 10000);
@@ -196,15 +228,15 @@ let sketch = function (p) {
 
  
   const points: Point[] = [
-    //input8.txt
-    // new Point(10000,0),
-    // new Point( 0,10000),
-    // new Point(  6000,7000),
-    // new Point( 3000,7000),
-    // new Point( 7000,3000),
-    // new Point( 20000,21000),
-    // new Point( 14000,15000),
-    // new Point( 3000   ,4000),
+    // //input8.txt
+    new Point(10000,0),
+    new Point( 0,10000),
+    new Point(  6000,7000),
+    new Point( 3000,7000),
+    new Point( 7000,3000),
+    new Point( 20000,21000),
+    new Point( 14000,15000),
+    new Point( 3000   ,4000),
     //inout20.tst
     new Point(4096,20992),
     new Point(5120 ,20992),
@@ -225,8 +257,65 @@ let sketch = function (p) {
     new Point(4160 ,29184),
     new Point(5120 ,29184),
     new Point(6144 ,29184),
-    new Point(7168, 29184)
-  
+    new Point(7168, 29184),
+    //input50.txt
+    new Point( 26000 ,27000),
+    new Point( 24000  ,23000),
+    new Point( 18000  ,23000),
+    new Point( 22000   ,9000),
+    new Point( 25000  ,25000),
+    new Point(  1000   ,2000),
+    new Point( 12000  ,10000),
+    new Point(22000  ,17000),
+    new Point(25000   ,1000),
+    new Point(15000   ,1000 ),
+
+    new Point( 19000  ,28000),
+    new Point( 12000   ,3000),
+    new Point( 4000  ,15000),
+    new Point(  2000   ,7000),
+    new Point( 18000  ,27000),
+    new Point(  1000  ,13000),
+    new Point(  9000  ,26000),
+    new Point( 11000  ,26000),
+    new Point(  6000  ,16000),
+    new Point( 18000  ,30000),
+
+    new Point(18000  ,26000),
+    new Point(24000  ,30000),
+    new Point(10000  ,25000),
+    new Point( 7000  ,10000),
+    new Point(19000  ,24000),
+    new Point(6000    ,  0),
+    new Point(26000  ,15000),
+    new Point(1000  ,23000),
+    new Point(23000  ,29000),
+    new Point(15000   ,7000),
+
+    new Point(15000  ,19000),
+    new Point(17000  ,31000),
+    new Point(6000   ,2000),
+    new Point(17000  ,16000),
+    new Point(1000  ,26000),
+    new Point(11000  ,19000),
+    new Point(25000   ,   0),
+    new Point(17000  ,30000),
+    new Point(16000  ,22000),
+    new Point(18000  ,13000),
+
+    new Point(3000  ,23000),
+    new Point(10000  ,13000),
+    new Point(1000   ,9000),
+    new Point(11000  ,21000),
+    new Point(29000  ,19000),
+    new Point(9000  ,29000),
+    new Point(30000  , 3000),
+    new Point(9000   ,1000),
+    new Point(5000  ,29000),
+    new Point(26000  , 6000),
+
+
+    
   ];
 
   p.draw = function () {
@@ -243,16 +332,16 @@ let sketch = function (p) {
       point.draw();
     }
 
-    // const collinear = new FastCollinearPoints(points);
-    // for (const segment of collinear.segments()) {
-    //   console.log(segment.toString());
-    //   segment.draw();
-    // }
-    const BruteCollinear = new BruteCollinearPoints(points);
-		for (const segment of BruteCollinear.getSegments()) {
-			console.log(segment.toString());
-			segment.draw();
-		}
+    const Fastcollinear = new FastCollinearPoints(points);
+    for (const segment of Fastcollinear.segments()) {
+      console.log(segment.toString());
+      segment.draw();
+    }
+    // const BruteCollinear = new BruteCollinearPoints(points);
+		// for (const segment of BruteCollinear.getSegments()) {
+		// 	console.log(segment.toString());
+		// 	segment.draw();
+		// }
   };
 };
 
