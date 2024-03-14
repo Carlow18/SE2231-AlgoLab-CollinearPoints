@@ -63,7 +63,26 @@ let sketch = function (p) {
       p.line(this.x, this.y, that.x, that.y);
     }
 
-    slopeTo(that: Point): number {}
+    slopeTo(other: Point): number {
+      if (this.x === other.x) {
+          if (this.y === other.y) {
+              return Number.NEGATIVE_INFINITY; // degenerate line segment (duplicate point)
+          } else {
+              return Number.POSITIVE_INFINITY; // vertical line segment
+          }
+      } else {
+          return (other.y - this.y) / (other.x - this.x);
+      }
+  }
+    compareTo(other: Point): number {
+      if (this.y < other.y || (this.y === other.y && this.x < other.x)) {
+          return -1;
+      } else if (this.y === other.y && this.x === other.x) {
+          return 0;
+      } else {
+          return 1;
+      }
+  }
   }
 
   class LineSegment {
@@ -93,18 +112,69 @@ let sketch = function (p) {
   }
 
   class BruteCollinearPoints {
+    private segments: LineSegment[];
+
     constructor(points: Point[]) {
-      // YOUR CODE HERE
+        if (points === null) throw new Error("null argument to constructor");
+        this.segments = [];
+        this.checkNull(points);
+
+        for (let i = 0; i < points.length - 1; i++) {
+            let minIndex = i;
+            for (let j = i + 1; j < points.length; j++) {
+                if (points[j].compareTo(points[minIndex]) < 0) {
+                    minIndex = j;
+                }
+            }
+            if (minIndex !== i) {
+                const temp = points[i];
+                points[i] = points[minIndex];
+                points[minIndex] = temp;
+            }
+        }
+
+        for (let i = 0; i < points.length - 3; ++i) {
+            for (let j = i + 1; j < points.length - 2; ++j) {
+                for (let k = j + 1; k < points.length - 1; ++k) {
+                    for (let l = k + 1; l < points.length; ++l) {
+                        if (
+                            points[i].slopeTo(points[j]) === points[i].slopeTo(points[l]) &&
+                            points[i].slopeTo(points[j]) === points[i].slopeTo(points[k])
+                        ) {
+                            const tempLineSegment = new LineSegment(points[i], points[l]);
+                            if (!this.segments.some(segment => this.areEqual(segment, tempLineSegment))) {
+                                this.segments.push(tempLineSegment);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    numberOfSegments(): number {
-      // YOUR CODE HERE
+    public numberOfSegments(): number {
+        return this.segments.length;
     }
 
-    segments(): LineSegment[] {
-      // YOUR CODE HERE
+    public getSegments(): LineSegment[] {
+        return this.segments;
     }
+
+    private checkNull(points: Point[]): void {
+        for (let i = 0; i < points.length; i++) {
+            if (points[i] === null) {
+                throw new Error("One of the points in the points array is null");
+            }
+        }
+    }
+
+    private areEqual(firstLine: LineSegment, secondLine: LineSegment): boolean {
+      return (
+          (firstLine.p === secondLine.p && firstLine.q === secondLine.q) ||
+          (firstLine.p === secondLine.q && firstLine.q === secondLine.p)
+      );
   }
+}
 
   class FastCollinearPoints {
     constructor(points: Point[]) {
@@ -124,14 +194,39 @@ let sketch = function (p) {
   // const point = new Point(19000, 10000);
   // const point2 = new Point(10000, 10000);
 
-  // from input6.txt
+ 
   const points: Point[] = [
-    new Point(19000, 10000),
-    new Point(18000, 10000),
-    new Point(32000, 10000),
-    new Point(21000, 10000),
-    new Point(1234, 5678),
-    new Point(14000, 10000),
+    //input8.txt
+    // new Point(10000,0),
+    // new Point( 0,10000),
+    // new Point(  6000,7000),
+    // new Point( 3000,7000),
+    // new Point( 7000,3000),
+    // new Point( 20000,21000),
+    // new Point( 14000,15000),
+    // new Point( 3000   ,4000),
+    //inout20.tst
+    new Point(4096,20992),
+    new Point(5120 ,20992),
+    new Point(6144 ,20992),
+    new Point(7168 ,20992),
+    new Point(8128 ,20992),
+    new Point( 4096 ,22016),
+    new Point(4096 ,23040),
+    new Point(4096 ,24064),
+    new Point(4096 ,25088),
+    new Point( 5120 ,25088),
+    new Point(7168 ,25088),
+    new Point(8192 ,25088),
+    new Point( 8192 ,26112),
+    new Point(8192 ,27136),
+    new Point( 8192 ,28160),
+    new Point(8192 ,29184),
+    new Point(4160 ,29184),
+    new Point(5120 ,29184),
+    new Point(6144 ,29184),
+    new Point(7168, 29184)
+  
   ];
 
   p.draw = function () {
@@ -148,11 +243,16 @@ let sketch = function (p) {
       point.draw();
     }
 
-    const collinear = new FastCollinearPoints(points);
-    for (const segment of collinear.segments()) {
-      console.log(segment.toString());
-      segment.draw();
-    }
+    // const collinear = new FastCollinearPoints(points);
+    // for (const segment of collinear.segments()) {
+    //   console.log(segment.toString());
+    //   segment.draw();
+    // }
+    const BruteCollinear = new BruteCollinearPoints(points);
+		for (const segment of BruteCollinear.getSegments()) {
+			console.log(segment.toString());
+			segment.draw();
+		}
   };
 };
 
